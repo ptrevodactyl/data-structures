@@ -1,0 +1,7 @@
+.vscode/
+*/*/build/
+*/googletest/
+
+# temporary
+Lists/CDLinkedList/
+Trees/RBTree/
