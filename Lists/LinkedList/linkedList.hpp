@@ -2,8 +2,7 @@
 #define LINKEDLIST_HPP
 
 #include <iostream>
-#include <stdexcept>
-#include <optional>
+#include <type_traits>
 
 namespace mydata {
 
@@ -11,29 +10,28 @@ namespace mydata {
     struct ListNode {
         T val;
         ListNode<T> *next;
+
+        ListNode() { next = nullptr; }
+        ~ListNode() {}
     };
 
     template <typename T>
     class LinkedList {
-        enum Error {
-            OUT_OF_RANGE
-        };
-
         private:
-            int len; 
+            unsigned size; 
             ListNode<T> *head;
             ListNode<T> *tail;
         
         public:
             LinkedList<T>() {
-                len = 0;
-                head = NULL;
-                tail = NULL;
+                size = 0;
+                head = nullptr;
+                tail = nullptr;
             }
 
             virtual ~LinkedList<T>(){
                 ListNode<T> *curr = head, *temp;
-                while(curr != NULL) {
+                while(curr != nullptr) {
                     temp = curr;
                     curr = curr->next;
                     delete temp;
@@ -46,39 +44,77 @@ namespace mydata {
              * @param val 
              */
             virtual void append(T val) {
-                if(tail == NULL) {
-                    tail = new ListNode<T>();
-                    if(head == NULL) head = tail;
-                } else {
-                    tail->next = new ListNode<T>();
-                    tail = tail->next;
+                ListNode<T> *new_node = new ListNode<T>();
+                new_node->val = val;
+                new_node->next = nullptr;
+                if(size == 0) tail = head = new_node;
+                else {
+                    tail->next = new_node;
+                    tail = new_node;
                 }
-                tail->val = val;
-                len++;
+                size++;
             }
 
             /**
-             * @brief Returns the nth value stored in the list.
+             * @brief Inserts the value @a val at the beginning of the list.
              * 
-             * @param n index number
-             * @return T
-             * @throws LinkedList::Error::OUT_OF_RANGE if @a index is larger than list len
+             * @param val 
              */
-            virtual std::optional<T> getIndex(const int index) {
-                if(index >= len) {
-                    std::cerr << "Index `n` out of range: Must be less than list len.";
-                    return OUT_OF_RANGE;
+            virtual void prepend(T val) {
+                ListNode<T> *new_node = new ListNode<T>();
+                new_node->val = val;
+                if(size == 0) head = tail = new_node;
+                else {
+                    new_node->next = head;
+                    head = new_node;
                 }
-                ListNode<T> *curr = head;
-                
-                for(int i = 0; i < index; i++) curr = curr->next;
-                return curr->val;
+                size++;
             }
 
-            virtual inline int size() { return len; }
+            /**
+             * @brief Returns the number of elements in the list
+             * 
+             * @return size_t size
+             */
+            virtual inline unsigned getSize() { return size; }
 
-            virtual std::optional<T> operator[](const int index) { return getIndex(index); }
+            /**
+             * @brief Get the value stored at the beginning of the list
+             * 
+             * @return T
+             */
+            virtual inline T getHead() { return head->val; }
+
+            /**
+             * @brief Get the value stored at the end of the list
+             * 
+             * @return T
+             */
+            virtual inline T getTail() { return tail->val; }
+
+            /**
+             * @brief Show the contents of the list
+             * 
+             * @param os 
+             */
+            virtual void show(std::ostream& os = std::cout) {
+                os << "[";
+                for(ListNode<T> *curr = head; curr != nullptr; curr = curr->next) {
+                    os << curr->val;
+                    if(curr != tail) os << ", ";
+                }
+                os << "]";
+            }
+
+            template <typename J>
+            friend std::ostream& operator<<(std::ostream& os, LinkedList<J>& ll);
     };
+
+    template <typename J>
+    std::ostream& operator<<(std::ostream& os, LinkedList<J>& ll) {
+        ll.show(os);
+        return os;
+    }
 }
 
 #endif // LINKEDLIST_HPP
