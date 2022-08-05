@@ -5,3 +5,5 @@
 # temporary
 Lists/CDLinkedList/
 Trees/RBTree/
+Lists/LinkedList/main.cpp
+.gitignore
