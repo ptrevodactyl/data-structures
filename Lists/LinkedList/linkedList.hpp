@@ -18,13 +18,13 @@ namespace mydata {
     template <typename T>
     class LinkedList {
         private:
-            unsigned size; 
+            unsigned _size; 
             ListNode<T> *head;
             ListNode<T> *tail;
         
         public:
             LinkedList<T>() {
-                size = 0;
+                _size = 0;
                 head = nullptr;
                 tail = nullptr;
             }
@@ -43,16 +43,16 @@ namespace mydata {
              * 
              * @param val 
              */
-            virtual void append(T val) {
+            void append(T val) {
                 ListNode<T> *new_node = new ListNode<T>();
                 new_node->val = val;
                 new_node->next = nullptr;
-                if(size == 0) tail = head = new_node;
+                if(_size == 0) tail = head = new_node;
                 else {
                     tail->next = new_node;
                     tail = new_node;
                 }
-                size++;
+                ++_size;
             }
 
             /**
@@ -60,44 +60,42 @@ namespace mydata {
              * 
              * @param val 
              */
-            virtual void prepend(T val) {
+            void prepend(T val) {
                 ListNode<T> *new_node = new ListNode<T>();
                 new_node->val = val;
-                if(size == 0) head = tail = new_node;
+                if(_size == 0) head = tail = new_node;
                 else {
                     new_node->next = head;
                     head = new_node;
                 }
-                size++;
+                ++_size;
             }
 
             /**
-             * @brief Returns the number of elements in the list
-             * 
-             * @return size_t size
+             * @brief deletes the node at the beginning of the list
              */
-            virtual inline unsigned getSize() { return size; }
-
-            /**
-             * @brief Get the value stored at the beginning of the list
-             * 
-             * @return T
-             */
-            virtual inline T getHead() { return head->val; }
-
-            /**
-             * @brief Get the value stored at the end of the list
-             * 
-             * @return T
-             */
-            virtual inline T getTail() { return tail->val; }
+            void pop_begin() {
+                switch(_size) {
+                    case 0:
+                        return;
+                    case 1:
+                        delete head;
+                        head = tail = nullptr;
+                        break;
+                    default:
+                        ListNode<T> *temp = head->next;
+                        delete head;
+                        head = temp;
+                }
+                --_size;
+            }
 
             /**
              * @brief Show the contents of the list
              * 
-             * @param os 
+             * @param os the output stream to write to
              */
-            virtual void show(std::ostream& os = std::cout) {
+            void show(std::ostream& os = std::cout) {
                 os << "[";
                 for(ListNode<T> *curr = head; curr != nullptr; curr = curr->next) {
                     os << curr->val;
@@ -106,15 +104,55 @@ namespace mydata {
                 os << "]";
             }
 
+            /**
+             * @brief Returns the number of elements in the list
+             */
+            inline unsigned size() { return _size; }
+            
             template <typename J>
             friend std::ostream& operator<<(std::ostream& os, LinkedList<J>& ll);
+
+            /**
+             * @brief Iterator helpers
+             */
+            class iterator;
+            iterator begin() { return iterator(head, *this); }
+            iterator end() { return iterator(nullptr, *this); }
     };
 
+    /**
+     * @brief Show the contents of the list
+     * 
+     * @param os the output stream to write to
+     */
     template <typename J>
     std::ostream& operator<<(std::ostream& os, LinkedList<J>& ll) {
         ll.show(os);
         return os;
     }
+
+    /**
+     * @brief Iterator class for LinkedLists
+     * 
+     * @tparam type T
+     */
+    template <typename T>
+    class LinkedList<T>::iterator {
+        private:
+            ListNode<T> *_pos;
+            LinkedList<T> &_ll;
+        public:
+            iterator(ListNode<T> *pos, LinkedList<T> &ll): _pos(pos), _ll(ll) {}
+            
+            iterator &operator++() {
+                _pos = _pos->next;
+                return *this;
+            }
+
+            bool operator!=(const iterator &other) const { return _pos != other._pos; }
+
+            T operator*() { return _pos->val; }
+    };
 }
 
 #endif // LINKEDLIST_HPP
